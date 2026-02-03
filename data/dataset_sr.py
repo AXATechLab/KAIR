@@ -91,6 +91,12 @@ class DatasetSR(data.Dataset):
             mode = random.randint(0, 7)
             img_L, img_H = util.augment_img(img_L, mode=mode), util.augment_img(img_H, mode=mode)
 
+        if self.opt['phase'] == 'test': # center crop to avoid long evaluation time
+            H, W, _ = img_L.shape
+            img_L = img_L[H//2-self.L_size//2:H//2+self.L_size//2, W//2-self.L_size//2:W//2+self.L_size//2, :]
+            H, W, _ = img_H.shape
+            img_H = img_H[H//2-self.patch_size//2:H//2+self.patch_size//2, W//2-self.patch_size//2:W//2+self.patch_size//2, :]
+
         # ------------------------------------
         # L/H pairs, HWC to CHW, numpy to tensor
         # ------------------------------------

@@ -109,6 +109,7 @@ class ModelBase():
                 print('Using static graph. Make sure that "unused parameters" will not change during training loop.')
                 network._set_static_graph()
         else:
+            # if self.opt['num_gpu'] > 1:
             network = DataParallel(network)
         return network
 
@@ -164,7 +165,17 @@ class ModelBase():
             state_dict = torch.load(load_path)
             if param_key in state_dict.keys():
                 state_dict = state_dict[param_key]
-            network.load_state_dict(state_dict, strict=strict)
+            if 'params' in state_dict.keys():
+                state_dict = state_dict['params']
+            try:    
+                network.load_state_dict(state_dict, strict=strict)
+            except Exception as e:
+                print(f"Error loading state_dict: {e}, trying to load without strict and without attn_mask")
+                attn_mask_keys = [k for k in state_dict.keys() if k.endswith('attn_mask')]
+                for key in attn_mask_keys:
+                    del state_dict[key]
+                network.load_state_dict(state_dict, strict=False)
+                print("Loaded model without strict and without attn_mask")
         else:
             state_dict_old = torch.load(load_path)
             if param_key in state_dict_old.keys():

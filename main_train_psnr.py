@@ -60,8 +60,8 @@ def main(json_path='options/train_msrresnet_psnr.json'):
     # update opt
     # ----------------------------------------
     # -->-->-->-->-->-->-->-->-->-->-->-->-->-
-    init_iter_G, init_path_G = option.find_last_checkpoint(opt['path']['models'], net_type='G')
-    init_iter_E, init_path_E = option.find_last_checkpoint(opt['path']['models'], net_type='E')
+    init_iter_G, init_path_G = option.find_last_checkpoint(opt['path']['models'], net_type='G', pretrained_path=opt['path']['pretrained_netG'])
+    init_iter_E, init_path_E = option.find_last_checkpoint(opt['path']['models'], net_type='E', pretrained_path=opt['path']['pretrained_netE'])
     opt['path']['pretrained_netG'] = init_path_G
     opt['path']['pretrained_netE'] = init_path_E
     init_iter_optimizerG, init_path_optimizerG = option.find_last_checkpoint(opt['path']['models'], net_type='optimizerG')
@@ -127,6 +127,7 @@ def main(json_path='options/train_msrresnet_psnr.json'):
                                           num_workers=dataset_opt['dataloader_num_workers']//opt['num_gpu'],
                                           drop_last=True,
                                           pin_memory=True,
+                                          persistent_workers=True,
                                           sampler=train_sampler)
             else:
                 train_loader = DataLoader(train_set,
@@ -134,7 +135,8 @@ def main(json_path='options/train_msrresnet_psnr.json'):
                                           shuffle=dataset_opt['dataloader_shuffle'],
                                           num_workers=dataset_opt['dataloader_num_workers'],
                                           drop_last=True,
-                                          pin_memory=True)
+                                          pin_memory=True,
+                                          persistent_workers=True)
 
         elif phase == 'test':
             test_set = define_Dataset(dataset_opt)
